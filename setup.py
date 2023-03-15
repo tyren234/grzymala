@@ -18,9 +18,8 @@ setup(
     keywords=['python', 'geodesy', 'forward problem', 'inverse problem', 'coordinates', 'hirvonen'],
     classifiers=[
         "Development Status :: 1 - Planning",
-        "Intended Audience :: Students",
         "Programming Language :: Python :: 3",
-        "Operating System :: OS Indepentent",
+        "Operating System :: OS Independent",
         "License :: OSI Approved :: MIT License"
     ]
 )

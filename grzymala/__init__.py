@@ -1,1 +1,1 @@
-from hello import print_hello
+from .hello import print_hello
