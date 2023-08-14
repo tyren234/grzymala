@@ -1,2 +1,1 @@
-def print_hello():
-    print("Hello word!")
+print("Thank you for using Grzymala (Geodesic Real Zipped Young Multipurpouse Academic Library Aid)")
