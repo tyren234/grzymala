@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.0.1'
+VERSION = '1.0.0'
 DESCRIPTION = 'Package for solving geodesy problems'
 LONG_DESCRIPTION = 'A package that allows to solve many common geodesic problems.'
 
