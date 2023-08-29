@@ -1,5 +1,5 @@
 import numpy as np
-from math import sin, cos, sqrt, atan
+from math import sin, cos, sqrt, atan, tan
 import math
 
 '''
@@ -273,6 +273,51 @@ def sec2hms(seconds : 'float') -> 'list[float]':
 
     return [h, m, s]
 
+def blh2GaussKruger(latDeg : 'float', lonDeg : 'float', zoneLongtitude: 'float', a = 6378137, eSquared = 0.00669438002290):
+    '''
+    ### Description:
+
+    Function converts BLH coordinates to Gauss-Kruger's projection coordinates. 
+
+    ### Arguments
+
+    latDeg : latitude of the point [DEGREES]
+    lonDeg : longtitude of the point [DEGREES]
+    zoneLongtitude : longtitude of the specific zone in Gauss-Kruger projection [DEGREES]
+
+    ### Output
+    xGK : local X coordinate converted to Gauss-Kruger system
+    yGK : local Y coordinate converted to Gauss-Kruger system
+
+    '''
+    phi = np.deg2rad(latDeg)
+    lam = np.deg2rad(lonDeg)
+    zone = np.deg2rad(zoneLongtitude)
+
+    # elipsoidal params
+    bSquared = (a**2) * (1 - eSquared)
+    eSquaredPrim = ((a**2) - bSquared) / bSquared
+
+    delta_lam = lam - zone
+    t = tan(phi)
+    etaSquared = eSquaredPrim * (cos(phi)**2)
+    N = a / (sqrt(1 - eSquared * np.power(np.sin(phi), 2)))
+
+    # length of the longtitude's arc
+    A_0 = 1 - (eSquared / 4) - (3 * eSquared**2 / 64) - (5 * eSquared**3) / 256
+    A_2 = (3 / 8) * (eSquared + (eSquared**2 / 4) + (15 * eSquared**3 / 128))
+    A_4 = (15 / 256) * (eSquared**2 + (3 * eSquared**3 / 4))
+    A_6 = (35 * eSquared**3) / 3072
+    rho = a * (A_0 * phi - A_2 * sin(2 * phi) + A_4 * sin(4 * phi) + A_6 * sin(6 * phi))
+
+    # Gauss-Kruger local coordinates
+    xGK = rho + (delta_lam**2 / 2) * N * sin(phi) * cos(phi) * (1 + (delta_lam**2 / 12) * (cos(phi)**2) * (5 - t**2 + 9 * etaSquared + 4 * etaSquared**2)
+                                + ((delta_lam**2 / 360) * (cos(phi)**4) * (61 - 58 * t**2 + t**4 + 270 * etaSquared - 330 * etaSquared * t**2)))
+    yGK = delta_lam * N * cos(phi) * (1 + ((delta_lam**2 / 6) * (cos(phi)**2) * (1 - t**2 + etaSquared)) +
+                                    ((delta_lam**4 / 120) * (cos(phi)**4) * (5 - 18 * t**2 + t**4 + 14 * etaSquared - 58 * etaSquared * t**2)))
+
+    return xGK, yGK
+
 def julday(y,m,d,h):
     '''
     Simplified Julian Date generator, valid only between
@@ -337,6 +382,54 @@ def kivioja(phiDegrees : 'float', lamDegrees : 'float', azimuthDegrees : 'float'
         az = az + delta_az_m
 
     return [np.rad2deg(phi), np.rad2deg(lam), np.rad2deg(az)]
+
+def vincenty(latA : 'float', lonA : 'float', latB : 'float', lonB : 'float', a = 6378137, eSquared = 0.00669438002290):
+    '''
+    Parameters
+    ----------
+    latA : latitude of point A [RAD]
+    lonA : longtitude of point A [RAD]
+    latB : latitude of point B [RAD]
+    lonB : longtitude of point B [RAD]
+
+    Returns
+    -------
+    sAB : length of the geodetic line between points A and B [METERS]
+    Az_AB : azimuth of the geodetic line between points A and B [RAD]
+    Az_BA : reverse azimuth of the geodetic line between points A and B [RAD]
+    '''
+    b = a * sqrt(1 - eSquared)
+    f = 1 - b / a
+    dL = lonB - lonA
+    UA = atan((1 - f) * tan(latA))
+    UB = atan((1 - f) * tan(latB))
+    L = dL
+
+    while True:
+        sin_sig = sqrt((cos(UB) * sin(L))**2 + (cos(UA) * sin(UB) - sin(UA) *  cos(UB) * cos(L))**2)
+        cos_sig = sin(UA) * sin(UB) + cos(UA) * cos(UB) * cos(L)
+        sig = np.arctan2(sin_sig, cos_sig)
+
+        sin_al = (cos(UA) * cos(UB) *  sin(L)) / sin_sig
+        cos2_al = 1 - sin_al**2
+        cos2_sigm = cos_sig - (2 * sin(UA) * sin(UB)) / cos2_al
+        C = (f / 16) * cos2_al * (4 + f * (4 - 3 * cos2_al))
+        Lst = L
+        L = dL + (1-C) * f * sin_al * (sig + C * sin_sig * (cos2_sigm + C * cos_sig * (-1 + 2 * cos2_sigm**2)))
+        if abs(L - Lst) < (0.000001 / 206265):
+            break
+    
+    u2 = (a**2 - b**2) / (b**2) * cos2_al
+    A = 1 + (u2/16384) * (4096 + u2 * (-768 + u2 * (320 - 175 * u2)))
+    B = u2 / 1024 * (256 + u2 * (-128 + u2 * (74 - 47 * u2)))
+    d_sig = B * sin_sig * (cos2_sigm + 1 / 4 * B * (cos_sig * (-1 + 2 * cos2_sigm**2)\
+            - 1 / 6 * B * cos2_sigm * (-3 + 4 * sin_sig**2)*(-3 + 4 * cos2_sigm**2)))
+    sAB = b * A * (sig - d_sig)
+    
+    Az_AB = np.arctan2((cos(UB) * sin(L)), (cos(UA) * sin(UB) - sin(UA) * cos(UB) * cos(L)))
+    Az_BA = np.arctan2((cos(UA) * sin(L)), (-sin(UA) * cos(UB) + cos(UA) * sin(UB) * cos(L))) + np.pi
+
+    return sAB, Az_AB, Az_BA
 
 def countNEU(ovserverLatitudeRad : 'float', observerLongitudeRad : 'float'):
     n = np.array([
