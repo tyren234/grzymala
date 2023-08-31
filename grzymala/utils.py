@@ -257,7 +257,7 @@ def sec2hms(seconds : 'float') -> 'list[float]':
     '''
     ### Description:
 
-    Function 
+    Function converts seconds to hours, minutes, seconds.
 
     ### Arguments
 
@@ -272,6 +272,46 @@ def sec2hms(seconds : 'float') -> 'list[float]':
     s = seconds - h * 3600 - m * 60
 
     return [h, m, s]
+
+def GaussKruger2PL92(xGK : 'float', yGK : 'float', m92 = 0.9993):
+    '''
+    ### Description:
+
+    Function converts Gauss-Kruger coordinates to PL-1992 projection.
+
+    ### Arguments
+    xGK : local X coordinate converted to Gauss-Kruger system
+    yGK : local Y coordinate converted to Gauss-Kruger system
+
+    ### Output
+    x92 : local X coordinate converted to PL-1992 system
+    y92 : local Y coordinate converted to PL-1992 system
+    
+    '''
+    x92 = m92 * xGK - 5300000
+    y92 = m92 * yGK + 500000
+
+    return x92, y92
+
+def GaussKruger2PL00(xGK : 'float', yGK : 'float', zoneNumber : 'float', m00 = 0.999923):
+    '''
+    ### Description:
+
+    Function converts Gauss-Kruger coordinates to PL-2000 projection.
+
+    ### Arguments
+    xGK : local X coordinate converted to Gauss-Kruger system
+    yGK : local Y coordinate converted to Gauss-Kruger system
+
+    ### Output
+    x92 : local X coordinate converted to PL-2000 system
+    y92 : local Y coordinate converted to PL-2000 system
+    
+    '''
+    x00 = m00 * xGK 
+    y00 = m00 * yGK + zoneNumber * 1000000 + 500000 
+
+    return x00, y00
 
 def blh2GaussKruger(latDeg : 'float', lonDeg : 'float', zoneLongtitude: 'float', a = 6378137, eSquared = 0.00669438002290):
     '''
@@ -317,6 +357,109 @@ def blh2GaussKruger(latDeg : 'float', lonDeg : 'float', zoneLongtitude: 'float',
                                     ((delta_lam**4 / 120) * (cos(phi)**4) * (5 - 18 * t**2 + t**4 + 14 * etaSquared - 58 * etaSquared * t**2)))
 
     return xGK, yGK
+
+def GaussKruger2blh(xGK : 'float', yGK : 'float', zoneLongtitude : 'float', a = 6378137, eSquared = 0.00669438002290):
+    '''
+    ### Description:
+
+    Function converts Gauss-Kruger's projection coordinates to latitude and longtitude. 
+
+    ### Arguments
+    xGK : local X coordinate converted to Gauss-Kruger system
+    yGK : local Y coordinate converted to Gauss-Kruger system
+
+    ### Output
+    latDeg : latitude of the point [DEGREES]
+    lonDeg : longtitude of the point [DEGREES]
+
+    
+    '''
+    A0 = 1 - eSquared/4 - (3 * eSquared**2) / 64 - (5 * eSquared**3) / 256
+    A2 = (3 / 8) * (eSquared + (eSquared**2) / 4 + (15 * eSquared**3) / 128)
+    A4 = (15 / 256) * (eSquared**2 + (3 * eSquared**3) / 4)
+    A6 = (35 * eSquared**3) / 3072
+    bSquared = (a**2) * (1 - eSquared)
+    eSquaredPrim = ((a**2) - bSquared) / bSquared
+    phiTemp = xGK / (a * A0)
+    
+    while 1:
+        dl = a * (A0 * phiTemp - A2 * sin(2 * phiTemp) + A4 * sin(4 * phiTemp) - A6 * sin(6 * phiTemp))
+        phiTemp_n = phiTemp + (xGK - dl) / (a * A0)
+        dl_n = a * (A0 * phiTemp_n - A2 * sin(2 * phiTemp_n) + A4 * sin(4 * phiTemp_n) - A6 * sin(6 * phiTemp_n))
+        if (abs(phiTemp_n - phiTemp) <= np.radians(0.000001 / 3600)):
+            phiTemp = phiTemp_n
+            dl = dl_n
+            break
+        else:
+            phiTemp = phiTemp_n
+            dl = dl_n
+    N1 = a / sqrt(1 - eSquared * ((sin(phiTemp)) ** 2))
+    M1 = (a * (1 - eSquared)) / sqrt((1 - eSquared * (sin(phiTemp) ** 2)) ** 3)
+    t1 = tan(phiTemp)
+    n12 = eSquaredPrim * ((cos(phiTemp)) ** 2)
+
+    latDeg = phiTemp - yGK ** 2 * t1 / (2 * M1 * N1) * (1 - yGK ** 2 / (12 * N1 ** 2) * (5 + 3 * t1 ** 2 + n12 - 9 * n12 * t1 ** 2 - 4 * n12 ** 4) + yGK ** 4 / (360 * N1 ** 4) * (61 + 90 * t1 ** 2 + 45 * t1 ** 4))
+    lonDeg = zoneLongtitude + yGK / (N1 * cos(phiTemp)) * (1 - (yGK ** 2 / (6 * N1 ** 2)) * (1 + 2 * t1 ** 2 + n12) + ((yGK ** 4) / (120 * N1 ** 4)) * (5 + 28 * t1 ** 2 + 24 * t1 ** 4 + 6 * n12 + 8 * n12 * t1 ** 2))
+
+    return np.degrees(latDeg), np.degrees(lonDeg)
+
+def gaussArea(x : 'np.array', y : 'np.array'):
+    '''
+    ### Description:
+
+    Function calculates area inside given points. 
+
+    ### Arguments
+    x : array of X coordinates
+    y : array of Y coordinates
+
+    ### Output
+    area : calculated area
+    
+    '''
+    if len(x) < 3:
+        raise Exception("Number of points should be greater than 2!")
+    if len(x) != len(y):
+        raise Exception("Arrays should be the same length!")
+    
+    doubleArea = 0
+    for i in range(len(x)):
+        if i != len(x) - 1:
+            doubleArea += x[i] * (y[i + 1] - y[i - 1])
+        else:
+            doubleArea += x[i] * (y[0] - y[i - 1])
+    area = doubleArea / 2
+
+    return area
+
+def gaussAreaCheck(x : 'np.array', y : 'np.array'):
+    '''
+    ### Description:
+
+    Function calculates area inside given points.
+
+    ### Arguments
+    x : array of X coordinates
+    Y : array of Y coordinates
+
+    ### Output
+    area : calculated area
+    
+    '''
+    if len(x) < 3:
+        raise Exception("Number of points should be greater than 2!")
+    if len(x) != len(y):
+        raise Exception("Arrays should be the same length!")
+    
+    doubleArea = 0
+    for i in range (len(y)):
+        if i != len(y) - 1:
+            doubleArea += y[i] * (x[i + 1] - x[i - 1])
+        else:
+            doubleArea += y[i] * (x[0] - x[i - 1])
+    area = doubleArea / -2
+
+    return area
 
 def julday(y,m,d,h):
     '''
@@ -430,6 +573,7 @@ def vincenty(latA : 'float', lonA : 'float', latB : 'float', lonB : 'float', a =
     Az_BA = np.arctan2((cos(UA) * sin(L)), (-sin(UA) * cos(UB) + cos(UA) * sin(UB) * cos(L))) + np.pi
 
     return sAB, Az_AB, Az_BA
+
 
 def countNEU(ovserverLatitudeRad : 'float', observerLongitudeRad : 'float'):
     n = np.array([
