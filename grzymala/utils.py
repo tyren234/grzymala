@@ -43,7 +43,22 @@ def blh2xyz(latitudeRad : 'float', longitudeRad : 'float', heightMeters : 'float
     ]
     return coords
 
-def xyz2phiLamH(objectXYZ : 'list[float]', a = 6378137,e2 = 0.00669438002290):
+def xyz2phiLamH(objectXYZ : 'list[float]', a = 6378137,e2 = 0.00669438002290) -> 'tuple[float]':
+    '''
+    ### Description:
+
+    Function calculates latitude, longitude and height of a given point
+
+    ### Arguments
+
+    - objectXYZ : 'list[float]' - object's x, y and z coordinates
+    - optional: a : 'float'
+    - optional: e2 : 'float'
+
+    ### Output
+
+    tuple[float] - tuple of three coordinates [phi, lambda, h] representing the position of the given point
+    '''
     x,y,z = objectXYZ
 
     p = np.sqrt(x**2 + y**2)
@@ -64,11 +79,27 @@ def xyz2phiLamH(objectXYZ : 'list[float]', a = 6378137,e2 = 0.00669438002290):
 
     return (phi, lam, h)
 
-def Np(B, a : 'int' = 6378137, e2 : 'float' = 0.00669438002290):
+def Np(B: 'float', a : 'int' = 6378137, e2 : 'float' = 0.00669438002290) -> 'float':
+    # TODO: description
     N = a/(1- e2*(np.sin(B)**2))**0.5
     return N
 
-def hirvonen(X, Y, Z, a : 'int' = 6378137, e2 : 'float' = 0.00669438002290):
+def hirvonen(X, Y, Z, a : 'int' = 6378137, e2 : 'float' = 0.00669438002290) -> 'tuple[float]':
+    '''
+    ### Description:
+
+    Function calculates latitude, longitude and height of a given point
+
+    ### Arguments
+
+    - objectXYZ : 'list[float]' - object's x, y and z coordinates
+    - optional: a : 'float'
+    - optional: e2 : 'float'
+
+    ### Output
+
+    tuple[float] - tuple of three coordinates [B, L, H] representing the position of the given point
+    '''
     r = (X**2 + Y**2)**0.5
     B = atan(Z/(r*(1-e2)))
     
@@ -91,15 +122,16 @@ def dms2deg(dms : 'list[float]') -> 'float':
     '''
     ### Description:
 
-    Function 
+    Changes angle form degrees, minutes and seconds to float degrees.
 
     ### Arguments
 
-
+    - dms: 'list[float]' - list consisting of [degrees, minutes and seconds]
 
     ### Output
 
-    
+    float value of angle in degrees
+
     '''
     degrees = dms[0]
     minutes = dms[1]
