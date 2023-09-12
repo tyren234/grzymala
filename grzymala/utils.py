@@ -493,27 +493,38 @@ def gaussAreaCheck(x : 'np.array', y : 'np.array'):
 
     return area
 
-def julday(y,m,d,h):
+def julday(y : 'int', m : 'int', d : 'int', h : 'int') -> 'int':
     '''
-    Simplified Julian Date generator, valid only between
-    1 March 1900 to 28 February 2100
+    ### Description:
+
+    Gives simplified Julian date. Valid only between 1 March 1900 to 28 February 2100
+
+    ### Arguments
+    y : year between 1900 and 2100
+    m : month (0-11)
+    d : day of the monh (1-31)
+    h : current hour
+
+    ### Output
+    date : calculated julian date
+    
     '''
     if m <= 2:
         y = y - 1
         m = m + 12
         
-    jd = np.floor(365.25*(y+4716))+np.floor(30.6001*(m+1))+d+h/24-1537.5;
-    return jd
+    date = np.floor(365.25 * (y + 4716)) + np.floor(30.6001 * (m + 1)) + d + h / 24 - 1537.5
+    return date
 
-def GMST(jd):
+def GMST(julianDate : 'int') -> 'float':
     '''
-    Greenwich Mean Sidereal Time - GMST in hours
+    Returns Greenwich Mean Sidereal Time - GMST in hours
     
-    jd : julian date - see julday(y,m,d,h)
+    julianDate : see julday(y : 'int', m : 'int', d : 'int', h : 'int') -> 'int':
     '''
-    T = (jd - 2451545) / 36525
-    Tu = jd - 2451545
-    g = 280.46061837 + 360.98564736629*(jd - 2451545.0) + 0.000387933*T**2-T**3/38710000
+    T = (julianDate - 2451545) / 36525
+    Tu = julianDate - 2451545
+    g = 280.46061837 + 360.98564736629*(julianDate - 2451545.0) + 0.000387933*T**2-T**3/38710000
     g = (g%360) / 15
     return g
 
@@ -529,8 +540,8 @@ def kivioja(phiDegrees : 'float', lamDegrees : 'float', azimuthDegrees : 'float'
         delta_s[i] = 1.5
     delta_s[-1] = s - (n-1)*1.5
 
-    a = 6378137             # wielka półoś dla elipsoidy GRS80
-    e = 0.00669438002290    # kwadrat pierwszego mimośrodu dla elipsoidy GRS80
+    a = 6378137
+    e = 0.00669438002290
 
     N = 0
     M = 0
