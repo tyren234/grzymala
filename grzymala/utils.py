@@ -1,5 +1,5 @@
-import numpy as np
 from math import sin, cos, sqrt, atan, tan
+import numpy as np
 import math
 
 '''
@@ -114,9 +114,6 @@ def hirvonen(X, Y, Z, a : 'int' = 6378137, e2 : 'float' = 0.00669438002290) -> '
     N = Np(B, a, e2)
     H = r/np.cos(B) - N
     return B, L, H 
-
-print(xyz2phiLamH([12,12,12]), hirvonen(12,12,12))
-# degrees
 
 def dms2deg(dms : 'list[float]') -> 'float':
     '''
