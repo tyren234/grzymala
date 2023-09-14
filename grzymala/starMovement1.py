@@ -61,7 +61,7 @@ def starMovement(observerLongitudeDeg: 'float',
 
     return AzHPairsObserver
 
-def skyplot(subplot: 'matplotlib.pyplot.figure.add_subplot(polar = True)', AzHPairsObserver : 'list[tuple[float, float]]', legend: bool = False) -> 'matplotlib.pyplot.figure':
+def skyplot(subplot: 'matplotlib.axes(polar = True)', AzHPairsObserver : 'list[tuple[float, float]]', legend: bool = False) -> 'matplotlib.axes':
     subplot.set_theta_zero_location('N')
     subplot.set_theta_direction(-1)
 
@@ -80,7 +80,7 @@ def skyplot(subplot: 'matplotlib.pyplot.figure.add_subplot(polar = True)', AzHPa
         subplot.legend()
     return subplot
 
-def heightAzimuth (subplot: 'matplotlib.pyplot.figure.add_subplot()', AzHPairsObserver : 'list[tuple[float, float]]', legend: bool = False) -> 'matplotlib.pyplot.figure':
+def heightAzimuth (subplot: 'matplotlib.axes', AzHPairsObserver : 'list[tuple[float, float]]', legend: bool = False) -> 'matplotlib.axes':
     xs = [x[0] for x in AzHPairsObserver]
     ys = [x[1] for x in AzHPairsObserver]
     subplot.scatter(xs, ys, label="Observer")
@@ -89,10 +89,33 @@ def heightAzimuth (subplot: 'matplotlib.pyplot.figure.add_subplot()', AzHPairsOb
     for x,y in AzHPairsObserver:
         subplot.annotate(str(round(y,2)),(x+move, y+move))
 
-    subplot.set_title("Height to azimuth")
+    subplot.set_title("Relationship between Height and Azimuth")
     subplot.set_xlabel("Azimuth Az (radians)")
     subplot.set_ylabel("Haight h (radians)")
     # subplot.grid()
+    if legend:
+        subplot.legend()
+    return subplot
+
+def heightTime (subplot: 'matplotlib.axes', AzHPairsObserver : 'list[tuple[float, float]]', legend: bool = False) -> 'matplotlib.axes':
+    hoursRange = range(24)
+    xs = [x for x in hoursRange]
+    ys = [x[1] for x in AzHPairsObserver]
+    subplot.scatter(xs, ys)
+    subplot.plot(xs, ys, label="Observer")
+
+    move = 0.02
+    for i, x in enumerate(hoursRange):
+        subplot.annotate(str(round(ys[i],2)),(x+move, ys[i]+move))
+
+    subplot.set_title("Relationship between Height and Time")
+    subplot.set_xlabel("Hour")
+    subplot.set_ylabel("Height h (radians)")
+    subplot.set_xticks(hoursRange)
+    numberOfVerticalTicks = 8
+    move = np.mean(ys) / numberOfVerticalTicks
+    subplot.set_yticks([x for x in np.arange(min(ys) - move, max(ys) + move, ((max(ys) - min(ys)) / numberOfVerticalTicks))])
+    subplot.grid()
     if legend:
         subplot.legend()
     return subplot
