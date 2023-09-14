@@ -119,3 +119,34 @@ def heightTime (subplot: 'matplotlib.axes', AzHPairsObserver : 'list[tuple[float
     if legend:
         subplot.legend()
     return subplot
+
+def spherePlot (subplot: 'matplotlib.axes(projection = "3d")', AzHPairsObserver : 'list[tuple[float, float]]', legend: bool = False) -> 'matplotlib.axes':
+    # plt.rcParams["figure.figsize"] = [10.00, 10.00]
+    # plt.rcParams["figure.autolayout"] = True
+    # fig = plt.figure()
+    # ax = fig.add_subplot(projection='3d')
+    r = 1
+    u, v = np.mgrid[0 : 2 * np.pi : 30j, 0 : 2 * np.pi : 20j]
+    x = np.cos(u) * np.sin(v)
+    y = np.sin(u) * np.sin(v)
+    z = np.cos(v)
+    # z[z<0] = 0
+    subplot.plot_surface(x, y, z, cmap=plt.cm.YlGnBu_r, alpha=0.1)
+
+    # linie
+    start = 2
+    gx = [r * np.sin(x[0]) * np.cos(x[1]) for x in AzHPairsObserver[start:]]
+    gy = [r * np.cos(x[1]) * np.cos(x[0]) for x in AzHPairsObserver[start:]]
+    gz = [r * np.sin(x[1]) for x in AzHPairsObserver[start:]]
+    subplot.plot3D(gx, gy, gz, label="Observer")
+
+    # punkty
+    subplot.scatter3D(gx[0], gy[0], gz[0])
+    subplot.scatter3D(gx[-1], gy[-1], gz[-1])
+
+    subplot.set_title("Star movement on the sphere")
+    if legend:
+        subplot.legend()
+
+    return subplot
+
