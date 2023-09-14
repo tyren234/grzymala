@@ -5,14 +5,10 @@ import math
 '''
     ### Description:
 
-    Function 
-
     ### Arguments
 
 
-
     ### Output
-
     
     '''
 
