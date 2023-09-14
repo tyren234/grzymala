@@ -61,7 +61,29 @@ def starMovement(observerLongitudeDeg: 'float',
 
     return AzHPairsObserver
 
-def skyplot(subplot: 'matplotlib.axes(polar = True)', AzHPairsObserver : 'list[tuple[float, float]]', legend: bool = False) -> 'matplotlib.axes':
+def skyplot(subplot: 'matplotlib.axes(polar = True)', 
+            AzHPairsObserver : 'list[tuple[float, float]]', 
+            legend: bool = False, label: str = "", 
+            color: str | None = None,
+            title: str = "Skyplot") -> 'matplotlib.axes':
+    '''
+    ### Description:
+
+    Plots skyplot visualisation of star movement.
+
+    ### Arguments
+
+    - subplot: matplotlib.pyplot.figure subplot. **Must have polar = True**.
+    - AzHPairsObserver: list of pairs of consecutive locations of the star in 24 hours. Should have exactly 24 elements.
+    - legend: wheather or not to display this star on the subplot's legend.
+    - color: color of the ploted elements.
+    - title: title of the subplot.
+
+    ### Output
+
+    subplot: given subplot with new elements plotted on it.
+    
+    '''
     subplot.set_theta_zero_location('N')
     subplot.set_theta_direction(-1)
 
@@ -73,42 +95,85 @@ def skyplot(subplot: 'matplotlib.axes(polar = True)', AzHPairsObserver : 'list[t
 
     xs = [x[0] for x in AzHPairsObserver]
     ys = [90-np.rad2deg(x[1]) for x in AzHPairsObserver]
-    subplot.scatter(xs, ys, label="Observer")
-    subplot.set_title("Skyplot")
+    subplot.scatter(xs, ys, label=label, color=color)
+    subplot.set_title(title)
 
     if legend:
         subplot.legend()
     return subplot
 
-def heightAzimuth (subplot: 'matplotlib.axes', AzHPairsObserver : 'list[tuple[float, float]]', legend: bool = False) -> 'matplotlib.axes':
+def heightAzimuth (subplot: 'matplotlib.axes', 
+                   AzHPairsObserver : 'list[tuple[float, float]]', 
+                   legend: bool = False, label: str = "", 
+                   color: str | None = None,
+                   title: str = "Relationship between Height and Azimuth") -> 'matplotlib.axes':
+    '''
+    ### Description:
+
+    Plots graph showing relationship between Height and Azimuth of the object.
+
+    ### Arguments
+
+    - subplot: matplotlib.pyplot.figure subplot. **Must have polar = True**.
+    - AzHPairsObserver: list of pairs of consecutive locations of the star in 24 hours. Should have exactly 24 elements.
+    - legend: wheather or not to display this star on the subplot's legend.
+    - color: color of the ploted elements.
+    - title: title of the subplot.
+
+    ### Output
+
+    subplot: given subplot with new elements plotted on it.
+    
+    '''
     xs = [x[0] for x in AzHPairsObserver]
     ys = [x[1] for x in AzHPairsObserver]
-    subplot.scatter(xs, ys, label="Observer")
+    subplot.scatter(xs, ys, label=label, color=color)
 
     move = 0.02
     for x,y in AzHPairsObserver:
         subplot.annotate(str(round(y,2)),(x+move, y+move))
 
-    subplot.set_title("Relationship between Height and Azimuth")
+    subplot.set_title(title)
     subplot.set_xlabel("Azimuth Az (radians)")
     subplot.set_ylabel("Haight h (radians)")
-    # subplot.grid()
     if legend:
         subplot.legend()
     return subplot
 
-def heightTime (subplot: 'matplotlib.axes', AzHPairsObserver : 'list[tuple[float, float]]', legend: bool = False) -> 'matplotlib.axes':
+def heightTime (subplot: 'matplotlib.axes', 
+                AzHPairsObserver : 'list[tuple[float, float]]', 
+                legend: bool = False, label: str = "", 
+                color: str | None = None,
+                title: str = "Relationship between Height and Time") -> 'matplotlib.axes':
+    '''
+    ### Description:
+
+    Plots graph showing relationship between Height of the object and Time in 24 hour period.
+
+    ### Arguments
+
+    - subplot: matplotlib.pyplot.figure subplot. **Must have polar = True**.
+    - AzHPairsObserver: list of pairs of consecutive locations of the star in 24 hours. Should have exactly 24 elements.
+    - legend: wheather or not to display this star on the subplot's legend.
+    - color: color of the ploted elements.
+    - title: title of the subplot.
+
+    ### Output
+
+    subplot: given subplot with new elements plotted on it.
+    
+    '''
     hoursRange = range(24)
     xs = [x for x in hoursRange]
     ys = [x[1] for x in AzHPairsObserver]
-    subplot.scatter(xs, ys)
-    subplot.plot(xs, ys, label="Observer")
+    subplot.scatter(xs, ys, color=color)
+    subplot.plot(xs, ys, label=label, color=color)
 
     move = 0.02
     for i, x in enumerate(hoursRange):
         subplot.annotate(str(round(ys[i],2)),(x+move, ys[i]+move))
 
-    subplot.set_title("Relationship between Height and Time")
+    subplot.set_title(title)
     subplot.set_xlabel("Hour")
     subplot.set_ylabel("Height h (radians)")
     subplot.set_xticks(hoursRange)
@@ -120,11 +185,29 @@ def heightTime (subplot: 'matplotlib.axes', AzHPairsObserver : 'list[tuple[float
         subplot.legend()
     return subplot
 
-def spherePlot (subplot: 'matplotlib.axes(projection = "3d")', AzHPairsObserver : 'list[tuple[float, float]]', legend: bool = False) -> 'matplotlib.axes':
-    # plt.rcParams["figure.figsize"] = [10.00, 10.00]
-    # plt.rcParams["figure.autolayout"] = True
-    # fig = plt.figure()
-    # ax = fig.add_subplot(projection='3d')
+def spherePlot (subplot: 'matplotlib.axes(projection = "3d")', 
+                AzHPairsObserver : 'list[tuple[float, float]]', 
+                legend: bool = False, label: str = "", 
+                color: str | None = None,
+                title: str = "Star movement on the sphere") -> 'matplotlib.axes':
+    '''
+    ### Description:
+
+    Plots 3d representation of object movement around the Earth's surface.
+
+    ### Arguments
+
+    - subplot: matplotlib.pyplot.figure subplot. **Must have polar = True**.
+    - AzHPairsObserver: list of pairs of consecutive locations of the star in 24 hours. Should have exactly 24 elements.
+    - legend: wheather or not to display this star on the subplot's legend.
+    - color: color of the ploted elements.
+    - title: title of the subplot.
+
+    ### Output
+
+    subplot: given subplot with new elements plotted on it.
+    
+    '''
     r = 1
     u, v = np.mgrid[0 : 2 * np.pi : 30j, 0 : 2 * np.pi : 20j]
     x = np.cos(u) * np.sin(v)
@@ -138,13 +221,13 @@ def spherePlot (subplot: 'matplotlib.axes(projection = "3d")', AzHPairsObserver 
     gx = [r * np.sin(x[0]) * np.cos(x[1]) for x in AzHPairsObserver[start:]]
     gy = [r * np.cos(x[1]) * np.cos(x[0]) for x in AzHPairsObserver[start:]]
     gz = [r * np.sin(x[1]) for x in AzHPairsObserver[start:]]
-    subplot.plot3D(gx, gy, gz, label="Observer")
+    subplot.plot3D(gx, gy, gz, label=label, color=color)
 
     # punkty
-    subplot.scatter3D(gx[0], gy[0], gz[0])
-    subplot.scatter3D(gx[-1], gy[-1], gz[-1])
+    subplot.scatter3D(gx[0], gy[0], gz[0], color=color)
+    subplot.scatter3D(gx[-1], gy[-1], gz[-1], color=color)
 
-    subplot.set_title("Star movement on the sphere")
+    subplot.set_title(title)
     if legend:
         subplot.legend()
 
